@@ -10,9 +10,9 @@ import (
 )
 
 type SsTable struct {
-	index *block.Block
+	index  *block.Block
 	footer Footer
-	file *os.File
+	file   *os.File
 }
 
 func Open(fileName string) (*SsTable, error) {
@@ -43,13 +43,20 @@ func Open(fileName string) (*SsTable, error) {
 	return &table, nil
 }
 
+func (table *SsTable) NewIterator() *Iterator {
+	var it Iterator
+	it.table = table
+	it.indexIter = table.index.NewIterator()
+	return &it
+}
+
 func (table *SsTable) Get(key []byte) ([]byte, error) {
-	it := NewIterator()
+	it := table.NewIterator()
 	it.Seek(key)
 	if it.Valid() {
 		internalKey := it.InternalKey()
-		if memtable.UserKeyComparator(key,internalKey) == 0{
-			return memtable.UserValue, nil
+		if memtable.UserKeyComparator(key, internalKey) == 0 {
+			return internalKey.UserValue, nil
 		} else {
 			return nil, fmt.Errorf("not deletion")
 		}
@@ -57,12 +64,12 @@ func (table *SsTable) Get(key []byte) ([]byte, error) {
 	return nil, fmt.Errorf("not found")
 }
 
-func (table  *SsTable) readBlock(blockHandle BlockHandle) *block.Block {
+func (table *SsTable) readBlock(blockHandle BlockHandle) *block.Block {
 	p := make([]byte, blockHandle.Size)
 	n, err := table.file.ReadAt(p, int64(blockHandle.Offset))
 	if err != nil || uint32(n) != blockHandle.Size {
 		return nil
 	}
 
-	return block.New(p)
+	return block.NewBlock(p)
 }

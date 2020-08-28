@@ -18,7 +18,7 @@ func Test_SsTable(t *testing.T) {
 	b := builder.Finish()
 
 	block := NewBlock(b)
-	it := NewIterator(block)
+	it := block.NewIterator()
 
 	it.Seek([]byte("1244"))
 	if it.Valid() {

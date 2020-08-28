@@ -2,6 +2,7 @@ package sstable
 
 import (
 	"encoding/binary"
+	"fmt"
 	"io"
 )
 
@@ -39,4 +40,3 @@ func (footer *Footer) DecodeFrom(r io.Reader) error {
 	}
 	return nil
 }
-

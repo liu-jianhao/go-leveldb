@@ -50,7 +50,7 @@ func (builder *TableBuilder) Add(internalKey *memtable.InternalKey) {
 	builder.pendingIndexHandle.InternalKey = internalKey
 
 	builder.numEntries++
-	builder.dataBlockBuilder.Add(internalKey)
+	_ = builder.dataBlockBuilder.Add(internalKey)
 	if builder.dataBlockBuilder.CurrentSizeEstimate() > MAX_BLOCK_SIZE {
 		builder.flush()
 	}
@@ -60,7 +60,7 @@ func (builder *TableBuilder) flush() {
 		return
 	}
 	orgKey := builder.pendingIndexHandle.InternalKey
-	builder.pendingIndexHandle.InternalKey = internal.NewInternalKey(orgKey.Seq, orgKey.Type, orgKey.UserKey, nil)
+	builder.pendingIndexHandle.InternalKey = memtable.NewInternalKey(orgKey.Seq, orgKey.Type, orgKey.UserKey, nil)
 	builder.pendingIndexHandle.SetBlockHandle(builder.writeblock(&builder.dataBlockBuilder))
 	builder.pendingIndexEntry = true
 }
@@ -72,15 +72,15 @@ func (builder *TableBuilder) Finish() error {
 
 	// write index block
 	if builder.pendingIndexEntry {
-		builder.indexBlockBuilder.Add(builder.pendingIndexHandle.InternalKey)
+		_ = builder.indexBlockBuilder.Add(builder.pendingIndexHandle.InternalKey)
 		builder.pendingIndexEntry = false
 	}
 	var footer Footer
 	footer.IndexHandle = builder.writeblock(&builder.indexBlockBuilder)
 
 	// write footer block
-	footer.EncodeTo(builder.file)
-	builder.file.Close()
+	_ = footer.EncodeTo(builder.file)
+	_ = builder.file.Close()
 	return nil
 }
 
@@ -92,7 +92,7 @@ func (builder *TableBuilder) writeblock(blockBuilder *block.BlockBuilder) BlockH
 	blockHandle.Size = uint32(len(content))
 	builder.offset += uint32(len(content))
 	_, builder.status = builder.file.Write(content)
-	builder.file.Sync()
+	_ = builder.file.Sync()
 	blockBuilder.Reset()
 	return blockHandle
 }

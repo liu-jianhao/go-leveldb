@@ -7,12 +7,6 @@ type Iterator struct {
 	index int
 }
 
-func NewIterator(b *Block) *Iterator {
-	return &Iterator{
-		block: b,
-	}
-}
-
 func (it *Iterator) Valid() bool {
 	return it.index >= 0 && it.index < len(it.block.items)
 }

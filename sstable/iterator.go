@@ -12,12 +12,11 @@ type Iterator struct {
 	indexIter       *block.Iterator
 }
 
-// Returns true iff the iterator is positioned at a valid node.
 func (it *Iterator) Valid() bool {
 	return it.dataIter != nil && it.dataIter.Valid()
 }
 
-func (it *Iterator) InternalKey() *internal.InternalKey {
+func (it *Iterator) InternalKey() *memtable.InternalKey {
 	return it.dataIter.InternalKey()
 }
 
@@ -29,21 +28,16 @@ func (it *Iterator) Value() []byte {
 	return it.InternalKey().UserValue
 }
 
-// Advances to the next position.
-// REQUIRES: Valid()
 func (it *Iterator) Next() {
 	it.dataIter.Next()
 	it.skipEmptyDataBlocksForward()
 }
 
-// Advances to the previous position.
-// REQUIRES: Valid()
 func (it *Iterator) Prev() {
 	it.dataIter.Prev()
 	it.skipEmptyDataBlocksBackward()
 }
 
-// Advance to the first entry with a key >= target
 func (it *Iterator) Seek(target []byte) {
 	// Index Block的block_data字段中，每一条记录的key都满足：
 	// 大于等于Data Block的所有key，并且小于后面所有Data Block的key
@@ -61,8 +55,6 @@ func (it *Iterator) Seek(target []byte) {
 	it.skipEmptyDataBlocksForward()
 }
 
-// Position at the first entry in list.
-// Final state of iterator is Valid() iff list is not empty.
 func (it *Iterator) SeekToFirst() {
 	it.indexIter.SeekToFirst()
 	it.initDataBlock()
@@ -72,8 +64,6 @@ func (it *Iterator) SeekToFirst() {
 	it.skipEmptyDataBlocksForward()
 }
 
-// Position at the last entry in list.
-// Final state of iterator is Valid() iff list is not empty.
 func (it *Iterator) SeekToLast() {
 	it.indexIter.SeekToLast()
 	it.initDataBlock()
@@ -128,4 +118,3 @@ func (it *Iterator) skipEmptyDataBlocksBackward() {
 		}
 	}
 }
-

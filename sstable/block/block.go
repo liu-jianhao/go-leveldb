@@ -28,3 +28,7 @@ func NewBlock(b []byte) *Block {
 		items: items,
 	}
 }
+
+func (block *Block) NewIterator() *Iterator {
+	return &Iterator{block: block}
+}

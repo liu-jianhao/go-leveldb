@@ -15,7 +15,7 @@ func Test_SsTable(t *testing.T) {
 	builder.Add(item)
 	item = memtable.NewInternalKey(3, memtable.TypeValue, []byte("125"), []byte("0245"))
 	builder.Add(item)
-	builder.Finish()
+	_ = builder.Finish()
 
 	table, err := Open("D:\\000123.ldb")
 	fmt.Println(err)
