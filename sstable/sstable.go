@@ -55,7 +55,7 @@ func (table *SsTable) Get(key []byte) ([]byte, error) {
 	it.Seek(key)
 	if it.Valid() {
 		internalKey := it.InternalKey()
-		if memtable.UserKeyComparator(key, internalKey) == 0 {
+		if memtable.UserKeyComparator(key, internalKey.UserKey) == 0 {
 			return internalKey.UserValue, nil
 		} else {
 			return nil, fmt.Errorf("not deletion")

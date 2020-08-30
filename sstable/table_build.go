@@ -42,7 +42,7 @@ func (builder *TableBuilder) Add(internalKey *memtable.InternalKey) {
 		return
 	}
 	if builder.pendingIndexEntry {
-		builder.indexBlockBuilder.Add(builder.pendingIndexHandle.InternalKey)
+		_ = builder.indexBlockBuilder.Add(builder.pendingIndexHandle.InternalKey)
 		builder.pendingIndexEntry = false
 	}
 	// todo : filter block
@@ -61,7 +61,7 @@ func (builder *TableBuilder) flush() {
 	}
 	orgKey := builder.pendingIndexHandle.InternalKey
 	builder.pendingIndexHandle.InternalKey = memtable.NewInternalKey(orgKey.Seq, orgKey.Type, orgKey.UserKey, nil)
-	builder.pendingIndexHandle.SetBlockHandle(builder.writeblock(&builder.dataBlockBuilder))
+	builder.pendingIndexHandle.SetBlockHandle(builder.writeBlock(&builder.dataBlockBuilder))
 	builder.pendingIndexEntry = true
 }
 
@@ -76,7 +76,7 @@ func (builder *TableBuilder) Finish() error {
 		builder.pendingIndexEntry = false
 	}
 	var footer Footer
-	footer.IndexHandle = builder.writeblock(&builder.indexBlockBuilder)
+	footer.IndexHandle = builder.writeBlock(&builder.indexBlockBuilder)
 
 	// write footer block
 	_ = footer.EncodeTo(builder.file)
@@ -84,7 +84,7 @@ func (builder *TableBuilder) Finish() error {
 	return nil
 }
 
-func (builder *TableBuilder) writeblock(blockBuilder *block.BlockBuilder) BlockHandle {
+func (builder *TableBuilder) writeBlock(blockBuilder *block.BlockBuilder) BlockHandle {
 	content := blockBuilder.Finish()
 	// todo : compress, crc
 	var blockHandle BlockHandle
